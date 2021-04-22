@@ -33,6 +33,7 @@ async def load(ctx, ext = "placeholder"):
     if (str(ctx.author.id) == "334245365148549120") or (str(ctx.author.id) == '198285838247919616'): 
         thikka.load_extension(f'cogs.{ext}')
         await ctx.send(f'`{ext}` loaded successfully')
+        print(f'`{ext}` cog loaded successfully')
     else:
         await ctx.send('fuck off cunt')
 @thikka.command() #unloads cog file
@@ -42,6 +43,7 @@ async def unload(ctx, ext = "placeholder"):
     elif (str(ctx.author.id) == "334245365148549120") or (str(ctx.author.id) == '198285838247919616'): 
         thikka.unload_extension(f'cogs.{ext}')
         await ctx.send(f'`{ext}` unloaded successfully')
+        print(f'`{ext}` cog unloaded successfully')
     else:
         await ctx.send('fuck off cunt')
 @thikka.command() #reloads cog file
@@ -52,6 +54,7 @@ async def reload(ctx, ext = "placeholder"):
         thikka.unload_extension(f'cogs.{ext}')
         thikka.load_extension(f'cogs.{ext}')
         await ctx.send(f'`{ext}` reloaded successfully')
+        print(f'`{ext}` cog reloaded successfully')
     else:
         await ctx.send('fuck off cunt')
 #---------/cog management area--------#
