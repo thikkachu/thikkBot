@@ -23,17 +23,15 @@ class serverManagement(commands.Cog):
     async def ping(self, ctx):
         await ctx.send(str(f'I have a ping of **{round(self.thikka.latency*1000)}**ms.'))
 
-    @commands.command() #clears messages from channel
+    @commands.command() #clears messages from channel'
+    @commands.has_permissions(manage_messages=True)
     async def clear(self, ctx, amount = "10"):
-        if (str(ctx.author.id) == '198285838247919616') or (str(ctx.author.id) == '334245365148549120'):
-            if amount.lower() == "all":
-                await ctx.channel.purge(limit = 101)
-            elif amount == "all.OverrideLimit":
-                await ctx.channel.purge(limit = 32000000)
-            else:
-                await ctx.channel.purge(limit = (int(amount) + 1))
+        if amount.lower() == "all":
+            await ctx.channel.purge(limit = 101)
+        elif amount == "all.OverrideLimit":
+            await ctx.channel.purge(limit = 32000000)
         else:
-            await ctx.channel.send('You need **MY** permission to use this command **BITCH**.')
+            await ctx.channel.purge(limit = (int(amount) + 1))
 
 #------------------------------/COMMANDS AREA------------------------------#
 

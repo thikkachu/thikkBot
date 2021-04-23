@@ -30,10 +30,7 @@ class Gambling(commands.Cog):
         for i in range(len(rolls)):
             sum = sum + int(rolls[i])
         await ctx.send(f'**{senderSpliced}** rolled **`{rolls}`**')  
-    @roll.error #error handler for roll func
-    async def info_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("I don't know how you did it, but you fucked up cause I can't process this shit.")
+        
     
     
     @commands.command(aliases = ['droll']) #returns dice roll(s). takes input in dnd syntax.
@@ -62,10 +59,6 @@ class Gambling(commands.Cog):
                 await ctx.send(f'**{senderSpliced}** rolled **`{rolls}`**')
             else:
                 await ctx.send('you did it wrong stupid')
-    @rolld.error #error handler for rolld func
-    async def info_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("I don't know how you did it, but you fucked up cause I can't process this shit.")
 
 
     @commands.command(aliases = ['coinflip', 'flip']) #returns a coinflip
@@ -80,12 +73,6 @@ class Gambling(commands.Cog):
             for i in range(amount):
                 flip.append(random.choice(['heads','tails']))
             await ctx.send(f"**{senderSpliced}'s** coin flips landed on: `{flip}`")
-    @coin.error #error handler for coin func
-    async def info_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("I don't know how you did it, but you fucked up cause I can't process this shit.")
-
-
 
 #------------------------------/COMMANDS AREA------------------------------#
 

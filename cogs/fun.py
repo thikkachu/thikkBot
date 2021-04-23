@@ -46,6 +46,17 @@ class fun(commands.Cog):
         else:
             await ctx.send(cat)
 
+    @commands.command(aliases = ['sex?'])    #sex
+    async def sex(self,ctx, *, misc = ""):
+        gifs = ['https://tenor.com/view/ena-ena-extinction-party-yes-auction-day-ena-auction-day-gif-19851364', 'https://tenor.com/view/ena-ena-joel-g-joel-g-ena-ena-extinction-party-extinction-party-ena-gif-18960646']
+        choice = random.choice(gifs)
+        if choice == gifs[0]:
+            await ctx.send(f'{choice}')
+            await ctx.send("Yes **SEX** :flushed:")
+        elif choice == gifs[1]:
+            await ctx.send(f'{choice}')
+            await ctx.send("NO. **NO SEX** :angry:")
+
 #------------------------------/COMMANDS AREA------------------------------#
 
 def setup(thikka): #integrates cog into main.py

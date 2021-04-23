@@ -1,7 +1,7 @@
 #made by thikkachu.
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import random
 import json
 import os
@@ -25,7 +25,12 @@ for file in os.listdir('./cogs'):
 
 #------------------------------COMMANDS AREA------------------------------#
 
+@thikka.command(aliases = ['', ' ']) #returns a message whenever ^ prefix is used without an arg
+async def _blank(ctx, *, misc = ''):
+    await ctx.send('Maybe try making a coherent sentence before summoning me.\n`^help to get started`')
+
 #---------cog management area--------#
+
 @thikka.command() #loads cog file
 async def load(ctx, ext = "placeholder"):
     if ext == "placeholder":
@@ -57,12 +62,26 @@ async def reload(ctx, ext = "placeholder"):
         print(f'`{ext}` cog reloaded successfully')
     else:
         await ctx.send('fuck off cunt')
+
 #---------/cog management area--------#
 
 #------------------------------/COMMANDS AREA------------------------------#
 
 
-#-------------------------JOIN/LEAVE MESSAGE AREA-------------------------#
+#-------------------------EVENTS AREA-------------------------#
+
+@thikka.event #global error handler
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.BadArgument):
+        await ctx.send("I don't know how you did it, but you fucked up cause I can't process this shit. **('Bad Argument')**")
+    elif isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send("You're missing some pieces of the puzzle buckaroo. **('Missing Required Argument')**")
+    elif isinstance(error, commands.CommandNotFound):
+        await ctx.send("That command doesn't exist you absolute melon.")
+    elif isinstance(error, commands.MissingPermissions):
+        await ctx.send("**YOU** need **MY** permission to run that command. :angry:")
+    else:
+        print(error)
 
 @thikka.event
 async def on_member_join(member):
@@ -72,6 +91,6 @@ async def on_member_join(member):
 async def on_member_remove(member):
     print(f'{member} is gone')
 
-#-------------------------/JOIN/LEAVE MESSAGE AREA-------------------------#
+#-------------------------/EVENTS AREA-------------------------#
 
 thikka.run(key['key'])
