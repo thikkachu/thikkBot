@@ -70,7 +70,7 @@ class Gambling(commands.Cog):
             await ctx.send(f"**{senderSpliced}'s** coin landed on {flip}")
         elif amount > 1:
             flip = []
-            for i in range(amount):
+            for _ in range(amount):
                 flip.append(random.choice(['heads','tails']))
             await ctx.send(f"**{senderSpliced}'s** coin flips landed on: `{flip}`")
 
