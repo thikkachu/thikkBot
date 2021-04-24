@@ -114,10 +114,7 @@ class Music(commands.Cog):
     async def skip(self, ctx): #skips current song
         state = self.get_state(ctx.guild)
         client = ctx.guild.voice_client
-        if ctx.channel.permissions_for(
-                ctx.author).administrator or state.is_requester(ctx.author):
-            # immediately skip if requester or admin
-            client.stop()
+        client.stop()
 
     def _vote_skip(self, channel, member):
         """Register a vote for `member` to skip the song playing."""
