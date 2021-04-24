@@ -12,6 +12,7 @@ bot = commands.Bot(command_prefix=cfg["prefix"])
 @bot.event
 async def on_ready():
     logging.info(f"Logged in as {bot.user.name}")
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="my life go down the drain '^help'"))
 
 COGS = [music.Music, error.CommandErrorHandler, meta.Meta, tips.Tips, gambling.Gambling, fun.fun, serverManagement.serverManagement]
 
