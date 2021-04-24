@@ -1,6 +1,7 @@
 import discord
 import logging
 import sys
+import toml
 from discord.ext import commands
 from .cogs import music, error, meta, tips, fun, gambling, serverManagement
 from . import config
