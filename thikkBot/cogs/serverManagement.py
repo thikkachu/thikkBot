@@ -19,11 +19,11 @@ class serverManagement(commands.Cog):
 
 #------------------------------COMMANDS AREA------------------------------#
 
-    @commands.command() #returns bot latency to the user
+    @commands.command(brief = 'Returns bot latency') #returns bot latency to the user
     async def ping(self, ctx):
         await ctx.send(str(f'I have a ping of **{round(self.bot.latency*1000)}**ms.'))
 
-    @commands.command() #clears messages from channel'
+    @commands.command(brief = '^clear <# of messages to delete> (defaults to 10 messages. all to delete 100. all.OverrideLimit to delete entire channel)') #clears messages from channel'
     @commands.has_permissions(manage_messages=True)
     async def clear(self, ctx, amount = "10"):
         if amount.lower() == "all":
@@ -35,7 +35,7 @@ class serverManagement(commands.Cog):
 
     #---------cog management area--------#
 
-    @commands.command() #loads cog file
+    @commands.command(brief = "thikk's use only") #loads cog file
     async def load(self, ctx, ext = "placeholder"):
         if ext == "placeholder":
             await ctx.send("Syntax: `^load (cog name)`")
@@ -45,7 +45,7 @@ class serverManagement(commands.Cog):
             print(f'`{ext}` cog loaded successfully')
         else:
             await ctx.send('fuck off cunt')
-    @commands.command() #unloads cog file
+    @commands.command(brief = "thikk's use only") #unloads cog file
     async def unload(self, ctx, ext = "placeholder"):
         if ext == "placeholder":
             await ctx.send("Syntax: `^unload (cog name)`")
@@ -55,7 +55,7 @@ class serverManagement(commands.Cog):
             print(f'`{ext}` cog unloaded successfully')
         else:
             await ctx.send('fuck off cunt')
-    @commands.command() #reloads cog file
+    @commands.command(brief = "thikk's use only") #reloads cog file
     async def reload(self, ctx, ext = "placeholder"):
         if ext == "placeholder":
             await ctx.send("Syntax: `^reload (cog name)`")

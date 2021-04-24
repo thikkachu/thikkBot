@@ -19,7 +19,7 @@ class Gambling(commands.Cog):
 
 #------------------------------COMMANDS AREA------------------------------#
 
-    @commands.command(aliases = ['dice', 'die']) #returns dice roll(s)
+    @commands.command(aliases = ['dice', 'die'], brief='^roll <# of sides> <# of times> (Rolls a 6 sided die once by default.)') #returns dice roll(s)
     async def roll(self, ctx, sides = 6, times = 1, *, misc = ''):
         sender = str(ctx.author)
         senderSpliced = sender[:-5]
@@ -33,7 +33,7 @@ class Gambling(commands.Cog):
         
     
     
-    @commands.command(aliases = ['droll']) #returns dice roll(s). takes input in dnd syntax.
+    @commands.command(aliases = ['droll'], brief='same as ^roll but in dnd syntax. ^rolld <times>d<sides>') #returns dice roll(s). takes input in dnd syntax.
     async def rolld(self, ctx, die = "d6", *, misc = ""):
         sender = str(ctx.author)
         senderSpliced = sender[:-5]
@@ -61,7 +61,7 @@ class Gambling(commands.Cog):
                 await ctx.send('you did it wrong stupid')
 
 
-    @commands.command(aliases = ['coinflip', 'flip']) #returns a coinflip
+    @commands.command(aliases = ['coinflip', 'flip'], brief = 'Flips a coin. ^flip <# of times> (flips once by default)') #returns a coinflip
     async def coin(self, ctx, amount = 1):
         sender = str(ctx.author)
         senderSpliced = sender[:-5] 

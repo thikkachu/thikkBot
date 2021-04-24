@@ -165,7 +165,7 @@ class Music(commands.Cog):
     def _queue_text(self, queue):
         """Returns a block of text describing a given song queue."""
         if len(queue) > 0:
-            message = [f"{len(queue)} songs in queue:"]
+            message = [f"{len(queue)} in queue:"]
             message += [
                 f"  {index+1}. **{song.title}** (requested by **{song.requested_by.name}**)"
                 for (index, song) in enumerate(queue)

@@ -30,7 +30,7 @@ class fun(commands.Cog):
         else:
             await ctx.send(f"fuck you **{senderSpliced}**")
     
-    @commands.command()   #returns a random cat picture (pulls from speech.json)
+    @commands.command(brief = "Roll a random picture of thikk's cat. (there's 2 exceedingly rare occurrences)")   #returns a random cat picture (pulls from speech.json)
     async def cat(self, ctx):
         sender = str(ctx.author)
         senderSpliced = sender[:-5]
@@ -46,7 +46,7 @@ class fun(commands.Cog):
         else:
             await ctx.send(cat)
 
-    @commands.command(aliases = ['sex?'])    #sex
+    @commands.command(aliases = ['sex?'], brief = "Decides whether or not sex.")    #sex
     async def sex(self,ctx, *, misc = ""):
         gifs = ['https://tenor.com/view/ena-ena-extinction-party-yes-auction-day-ena-auction-day-gif-19851364', 'https://tenor.com/view/ena-ena-joel-g-joel-g-ena-ena-extinction-party-extinction-party-ena-gif-18960646']
         choice = random.choice(gifs)
