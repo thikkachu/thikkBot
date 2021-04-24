@@ -5,6 +5,7 @@ from discord.ext import commands, tasks
 import random
 import json
 import os
+import asyncio
 
 #-------------------------INITIALIZES BOT ENV-----------------------------#
 
@@ -70,18 +71,18 @@ async def reload(ctx, ext = "placeholder"):
 
 #-------------------------EVENTS AREA-------------------------#
 
-@thikka.event #global error handler
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.BadArgument):
-        await ctx.send("I don't know how you did it, but you fucked up cause I can't process this shit. **('Bad Argument')**")
-    elif isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("You're missing some pieces of the puzzle buckaroo. **('Missing Required Argument')**")
-    elif isinstance(error, commands.CommandNotFound):
-        await ctx.send("That command doesn't exist you absolute melon.")
-    elif isinstance(error, commands.MissingPermissions):
-        await ctx.send("**YOU** need **MY** permission to run that command. :angry:")
-    else:
-        print(error)
+# @thikka.event #global error handler
+# async def on_command_error(ctx, error):
+#     if isinstance(error, commands.BadArgument):
+#         await ctx.send("I don't know how you did it, but you fucked up cause I can't process this shit. **('Bad Argument')**")
+#     elif isinstance(error, commands.MissingRequiredArgument):
+#         await ctx.send("You're missing some pieces of the puzzle buckaroo. **('Missing Required Argument')**")
+#     elif isinstance(error, commands.CommandNotFound):
+#         await ctx.send("That command doesn't exist you absolute melon.")
+#     elif isinstance(error, commands.MissingPermissions):
+#         await ctx.send("**YOU** need **MY** permission to run that command. :angry:")
+#     else:
+#         print(error)
 
 @thikka.event
 async def on_member_join(member):
