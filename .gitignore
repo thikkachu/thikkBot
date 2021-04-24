@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 key.json
 .mp3
+.toml
