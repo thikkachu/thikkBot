@@ -38,7 +38,7 @@ async def is_audio_requester(ctx):
     else:
         raise commands.CommandError(
             "You need to be the song requester to do that.")
-
+loop = False
 
 class Music(commands.Cog):
     """Bot commands to help play music."""
@@ -71,7 +71,7 @@ class Music(commands.Cog):
         else:
             raise commands.CommandError("Not in a channel smallcock.")
 
-    @commands.command(aliases=["resume", "p"])
+    @commands.command(aliases=["resume"])
     @commands.guild_only()
     @commands.check(audio_playing)
     async def pause(self, ctx):
@@ -84,6 +84,7 @@ class Music(commands.Cog):
             client.resume()
         else:
             client.pause()
+    
 
     @commands.command(aliases=["vol", "v"])
     @commands.guild_only()
@@ -107,7 +108,7 @@ class Music(commands.Cog):
         state.volume = float(volume) / 100.0
         client.source.volume = state.volume  # update the AudioSource's volume to match
 
-    @commands.command()
+    @commands.command(aliases = ['s', 'sk'])
     @commands.guild_only()
     @commands.check(audio_playing)
     @commands.check(in_voice_channel)
@@ -129,7 +130,6 @@ class Music(commands.Cog):
             # enough members have voted to skip, so skip the song
             logging.info(f"Enough votes, skipping...")
             channel.guild.voice_client.stop()
-
     def _play_song(self, client, state, song):
         state.now_playing = song
         state.skip_votes = set()  # clear skip votes
@@ -137,7 +137,10 @@ class Music(commands.Cog):
             discord.FFmpegPCMAudio(song.stream_url), volume=state.volume)
 
         def after_playing(err):
-            if len(state.playlist) > 0:
+            global loop
+            if loop == True:
+                self._play_song(client, state, song)
+            elif len(state.playlist) > 0:
                 next_song = state.playlist.pop(0)
                 self._play_song(client, state, next_song)
             else:
@@ -145,6 +148,17 @@ class Music(commands.Cog):
                                                  self.bot.loop)
 
         client.play(source, after=after_playing)
+    @commands.command()
+    @commands.guild_only()
+    @commands.check(audio_playing)
+    async def loop(self, ctx, *, misc = ''):
+        global loop
+        if loop == False:
+            loop = True
+            await ctx.send("I'm gonna loop this dick around your asshole boy. (now looping current song)")
+        elif loop == True:
+            loop = False
+            await ctx.send("Looping disabled, heterosexuality re-established.")
 
     @commands.command(aliases=["np"])
     @commands.guild_only()
@@ -196,7 +210,7 @@ class Music(commands.Cog):
         else:
             raise commands.CommandError("You must use a valid index.")
 
-    @commands.command(brief="Plays audio from <url>.")
+    @commands.command(brief="Plays audio from <url>.", aliases = ['p', 'pl', 'pla'])
     @commands.guild_only()
     async def play(self, ctx, *, url):
         """Plays audio hosted at <url> (or performs a search for <url> and plays the first result)."""
