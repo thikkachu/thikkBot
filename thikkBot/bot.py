@@ -3,19 +3,19 @@ import logging
 import sys
 import toml
 from discord.ext import commands
-from .cogs import music, error, meta, tips, fun, gambling, serverManagement
+from .cogs import math,music, error, meta, tips, fun, gambling, serverManagement
 from . import config
 
 cfg = config.load_config()
 
 bot = commands.Bot(command_prefix=cfg["prefix"])
 
-@bot.event
+@bot.event 
 async def on_ready():
     logging.info(f"Logged in as {bot.user.name}")
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="my life go down the drain '^help'"))
 
-COGS = [music.Music, error.CommandErrorHandler, meta.Meta, tips.Tips, gambling.Gambling, fun.fun, serverManagement.serverManagement]
+COGS = [music.Music, error.CommandErrorHandler, meta.Meta, tips.Tips, gambling.Gambling, fun.fun, serverManagement.serverManagement, math.math]
 
 
 def add_cogs(bot):

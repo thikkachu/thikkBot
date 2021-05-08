@@ -1,9 +1,10 @@
-from discord.ext import commands
+from discord.ext import commands, tasks
 import discord
 import asyncio
 import youtube_dl
 import logging
 import math
+import time
 from urllib import request
 from ..video import Video
 
@@ -117,24 +118,14 @@ class Music(commands.Cog):
         client = ctx.guild.voice_client
         client.stop()
 
-    def _vote_skip(self, channel, member):
-        """Register a vote for `member` to skip the song playing."""
-        logging.info(f"{member.name} votes to skip")
-        state = self.get_state(channel.guild)
-        state.skip_votes.add(member)
-        users_in_channel = len([
-            member for member in channel.members if not member.bot
-        ])  # don't count bots
-        if (float(len(state.skip_votes)) /
-                users_in_channel) >= self.config["vote_skip_ratio"]:
-            # enough members have voted to skip, so skip the song
-            logging.info(f"Enough votes, skipping...")
-            channel.guild.voice_client.stop()
     def _play_song(self, client, state, song):
+        ffmpeg_options = {
+        'options': '-vn',
+        "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
+        }
         state.now_playing = song
-        state.skip_votes = set()  # clear skip votes
         source = discord.PCMVolumeTransformer(
-            discord.FFmpegPCMAudio(song.stream_url), volume=state.volume)
+            discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options), volume=state.volume)
 
         def after_playing(err):
             global loop
@@ -143,9 +134,6 @@ class Music(commands.Cog):
             elif len(state.playlist) > 0:
                 next_song = state.playlist.pop(0)
                 self._play_song(client, state, next_song)
-            else:
-                asyncio.run_coroutine_threadsafe(client.disconnect(),
-                                                 self.bot.loop)
 
         client.play(source, after=after_playing)
     @commands.command()
@@ -246,53 +234,14 @@ class Music(commands.Cog):
                 raise commands.CommandError(
                     "You're not in a vc dumbass")
 
-    # async def on_reaction_add(self, reaction, user):
-    #     """Respods to reactions added to the bot's messages, allowing reactions to control playback."""
-    #     message = reaction.message
-    #     if user != self.bot.user and message.author == self.bot.user:
-    #         await message.remove_reaction(reaction, user)
-    #         if message.guild and message.guild.voice_client:
-    #             user_in_channel = user.voice and user.voice.channel and user.voice.channel == message.guild.voice_client.channel
-    #             permissions = message.channel.permissions_for(user)
-    #             guild = message.guild
-    #             state = self.get_state(guild)
-    #             if permissions.administrator or (
-    #                     user_in_channel and state.is_requester(user)):
-    #                 client = message.guild.voice_client
-    #                 if reaction.emoji == "⏯":
-    #                     # pause audio
-    #                     self._pause_audio(client)
-    #                 elif reaction.emoji == "⏭":
-    #                     # skip audio
-    #                     client.stop()
-    #                 elif reaction.emoji == "⏮":
-    #                     state.playlist.insert(
-    #                         0, state.now_playing
-    #                     )  # insert current song at beginning of playlist
-    #                     client.stop()  # skip ahead
-    #             elif reaction.emoji == "⏭" and self.config["vote_skip"] and user_in_channel and message.guild.voice_client and message.guild.voice_client.channel:
-    #                 # ensure that skip was pressed, that vote skipping is
-    #                 # enabled, the user is in the channel, and that the bot is
-    #                 # in a voice channel
-    #                 voice_channel = message.guild.voice_client.channel
-    #                 self._vote_skip(voice_channel, user)
-    #                 # announce vote
-    #                 channel = message.channel
-    #                 users_in_channel = len([
-    #                     member for member in voice_channel.members
-    #                     if not member.bot
-    #                 ])  # don't count bots
-    #                 required_votes = math.ceil(
-    #                     self.config["vote_skip_ratio"] * users_in_channel)
-    #                 await channel.send(
-    #                     f"{user.mention} voted to skip ({len(state.skip_votes)}/{required_votes} votes)"
-    #                 )
+    @tasks.loop(seconds=180)
+    async def voice_check(self, ctx):
+        client = ctx.guild.voice_client
+        if client.is_playing():
+            return
+        elif not client.is_playing():
+            await client.disconnect()
 
-    # async def _add_reaction_controls(self, message):
-    #     """Adds a 'control-panel' of reactions to a message that can be used to control the bot."""
-    #     CONTROLS = ["⏮", "⏯", "⏭"]
-    #     for control in CONTROLS:
-    #         await message.add_reaction(control)
 
 
 class GuildState:
@@ -301,7 +250,6 @@ class GuildState:
     def __init__(self):
         self.volume = 1.0
         self.playlist = []
-        self.skip_votes = set()
         self.now_playing = None
 
     def is_requester(self, user):
