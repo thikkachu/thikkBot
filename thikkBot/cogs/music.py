@@ -118,7 +118,7 @@ class Music(commands.Cog):
         client = ctx.guild.voice_client
         client.stop()
 
-    def _play_song(self, client, state, song):
+    def _play_song(self, client, state, song, msg):
         ffmpeg_options = {
         'options': '-vn',
         "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
@@ -130,10 +130,13 @@ class Music(commands.Cog):
         def after_playing(err):
             global loop
             if loop == True:
-                self._play_song(client, state, song)
+                self._play_song(client, state, song, msg)
             elif len(state.playlist) > 0:
                 next_song = state.playlist.pop(0)
-                self._play_song(client, state, next_song)
+                self._play_song(client, state, next_song, msg)
+                asyncio.run_coroutine_threadsafe(msg.send(f"**Now playing** {next_song.title}", embed=next_song.get_embed()) ,self.bot.loop)
+
+
 
         client.play(source, after=after_playing)
     @commands.command()
@@ -204,6 +207,7 @@ class Music(commands.Cog):
         """Plays audio hosted at <url> (or performs a search for <url> and plays the first result)."""
 
         client = ctx.guild.voice_client
+        msg = ctx
         state = self.get_state(ctx.guild)  # get the guild's state
 
         if client and client.channel:
@@ -227,7 +231,7 @@ class Music(commands.Cog):
                         "There was an error downloading your video, sorry.")
                     return
                 client = await channel.connect()
-                self._play_song(client, state, video)
+                self._play_song(client, state, video, msg)
                 message = await ctx.send("**Now playing:**", embed=video.get_embed())
                 logging.info(f"Now playing '{video.title}'")
             else:
