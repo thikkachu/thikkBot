@@ -86,7 +86,6 @@ class Music(commands.Cog):
         else:
             client.pause()
     
-
     @commands.command(aliases=["vol", "v"])
     @commands.guild_only()
     @commands.check(audio_playing)
@@ -165,6 +164,7 @@ class Music(commands.Cog):
     async def queue(self, ctx):
         """Display the current play queue."""
         state = self.get_state(ctx.guild)
+        await ctx.send(f'Playing: **{state.playlist[0].title}**')
         await ctx.send(self._queue_text(state.playlist))
 
     def _queue_text(self, queue):
@@ -200,6 +200,17 @@ class Music(commands.Cog):
             await ctx.send(self._queue_text(state.playlist))
         else:
             raise commands.CommandError("You must use a valid index.")
+
+    @commands.command(aliases=['rm'], brief="Removes song from queue by it's index.")
+    @commands.guild_only()
+    @commands.check(audio_playing)
+    async def remove(self, ctx, index: int, *, misc=''):
+        state = self.get_state(ctx.guild)
+        if 1<= index <= len(state.playlist):
+            index = state.playlist.pop(index-1)
+            await ctx.send(self._queue_text(state.playlist))
+        else:
+            raise commands.CommandError("Out of range dumbass.")
 
     @commands.command(brief="Plays audio from <url>.", aliases = ['p', 'pl', 'pla'])
     @commands.guild_only()
