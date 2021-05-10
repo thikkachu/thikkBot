@@ -164,7 +164,7 @@ class Music(commands.Cog):
     async def queue(self, ctx):
         """Display the current play queue."""
         state = self.get_state(ctx.guild)
-        await ctx.send(f'Playing: **{state.playlist[0].title}**')
+        await ctx.send(f'Playing: **{state.now_playing.title}**')
         await ctx.send(self._queue_text(state.playlist))
 
     def _queue_text(self, queue):
