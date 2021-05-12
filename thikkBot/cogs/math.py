@@ -70,6 +70,7 @@ class math(commands.Cog):
             subtrahends = list(map(int, unspaceList(subtrahends.split())))
             subtrahend = sum(subtrahends)
             await ctx.send(f'Difference: `{str(int(minuend) - subtrahend)}`')
+
 #------------------------------/COMMANDS AREA------------------------------#
 
 def setup(bot): #integrates cog into main.py

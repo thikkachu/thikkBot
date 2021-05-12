@@ -3,8 +3,6 @@ import discord
 import asyncio
 import youtube_dl
 import logging
-import math
-import time
 from urllib import request
 from ..video import Video
 
@@ -78,13 +76,16 @@ class Music(commands.Cog):
     async def pause(self, ctx):
         """Pauses any currently playing audio."""
         client = ctx.guild.voice_client
-        self._pause_audio(client)
+        self._pause_audio(client, ctx)
 
-    def _pause_audio(self, client):
+    def _pause_audio(self, client, ctx):
         if client.is_paused():
             client.resume()
+            asyncio.run_coroutine_threadsafe(ctx.send(f"Track **Resumed**"), self.bot.loop )
+            
         else:
             client.pause()
+            asyncio.run_coroutine_threadsafe(ctx.send(f"Track **Paused**"),self.bot.loop)
     
     @commands.command(aliases=["vol", "v"])
     @commands.guild_only()
@@ -156,7 +157,10 @@ class Music(commands.Cog):
     async def nowplaying(self, ctx):
         """Displays information about the current song."""
         state = self.get_state(ctx.guild)
-        message = await ctx.send("", embed=state.now_playing.get_embed())
+        if ctx.guild.voice_client.is_paused():
+            message = await ctx.send("**Currently Paused:**", embed=state.now_playing.get_embed())
+        else:
+            message = await ctx.send("**Now Playing:**", embed=state.now_playing.get_embed())
 
     @commands.command(aliases=["q", "playlist"])
     @commands.guild_only()

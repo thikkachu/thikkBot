@@ -1,4 +1,5 @@
-cogs/fun.py
+thikkBot/cogs/fun.py
+./config.toml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
