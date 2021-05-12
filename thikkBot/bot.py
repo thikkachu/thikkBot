@@ -18,7 +18,7 @@ bot.remove_command('help')
 async def help(ctx):
     embed = discord.Embed(title = "Help", description = "^help <command> for more info on that command.")
     embed.add_field(name="Fun", value = "thikk, cat, sex")
-    embed.add_field(name="Music", value = "play, pause, leave, volume, skip, loop, nowplaying, queue, clearqueue, jumpqueue, remove,")
+    embed.add_field(name="Music", value = "play, pause, leave, volume, skip, loop, nowplaying, queue, clearqueue, jumpqueue, remove")
     embed.add_field(name="Gambling / Luck", value = "rolld, roll, coin")
     embed.add_field(name="Moderator", value = "ping, clear")
     embed.add_field(name="Miscellaneous", value = "uptime, tip")
@@ -143,6 +143,7 @@ async def tip(ctx):
     embed = discord.Embed(title = "Miscellaneous: ^tip", description = "Nothing yet.")
     embed.add_field(name = "**Command Syntax**", value = "^tip")
     await ctx.send(embed=embed)
+
 #---------------------------HELP-CMD----------------------------#
 
 @bot.event 
