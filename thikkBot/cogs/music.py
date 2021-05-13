@@ -21,6 +21,31 @@ def timeFormat(seconds):
             duration = duration[1:]
         return duration
 
+def titleLengthCheck(str):
+    if len(str) >= 37:
+        return(f'{str[0:36]}...')
+    else:
+        return str
+
+def _queue_text_(state, queue):
+    fullLength = 0
+    for index in range(len(queue)):
+        fullLength += queue[index-1].get_duration()
+    embed = discord.Embed(title = "Music Queue", description = f'**Playing:** {state.now_playing.title}\n\n**Queue Length:** `{timeFormat(fullLength)}`')
+    songList = []
+    songList += [f'{index+1}. **{titleLengthCheck(song.title)}**' for (index,song) in enumerate(queue)]
+    songList = "\n".join(songList)
+    embed.add_field(name = "Songs", value=songList)
+    durationList=[]
+    durationList += [f'{timeFormat(song.duration)}' for song in queue]
+    durationList = "\n".join(durationList)
+    embed.add_field(name = "Duration", value=durationList)
+    requesterList=[]
+    requesterList += [f'{song.requested_by.name}' for song in queue]
+    requesterList = "\n".join(requesterList)
+    embed.add_field(name = "Requester", value=requesterList)
+    return embed
+
 async def audio_playing(ctx):
     """Checks that audio is currently playing before continuing."""
     client = ctx.guild.voice_client
@@ -201,26 +226,10 @@ class Music(commands.Cog):
         
         state = self.get_state(ctx.guild)
         queue = state.playlist
-        
-        fullLength = 0
-        for index in range(len(queue)):
-            fullLength += queue[index-1].get_duration()
-
-        embed = discord.Embed(title = "Music Queue", description = f'**Playing:** {state.now_playing.title}\t|\t**Queue Length:** {timeFormat(fullLength)}')
-        songList = []
-        songList += [f'{index+1}. **{song.title}**' for (index,song) in enumerate(queue)]
-        songList = "\n".join(songList)
-        embed.add_field(name = "Songs", value=songList)
-        durationList=[]
-        durationList += [f'{timeFormat(song.duration)}' for song in queue]
-        durationList = "\n".join(durationList)
-        embed.add_field(name = "Duration", value=durationList)
-        requesterList=[]
-        requesterList += [f'{song.requested_by.name}' for song in queue]
-        requesterList = "\n".join(requesterList)
-        embed.add_field(name = "Requester", value=requesterList)
-        
-        await ctx.send(embed=embed)
+        if len(state.playlist) > 0:
+            await ctx.send(embed=_queue_text_(state, queue))
+        else:
+            await ctx.send("Your time is running out young one... there is **nothing** left in the queue <:no:799019895291379753>")
 
     @commands.command(aliases=["cq"])
     @commands.guild_only()
@@ -229,6 +238,7 @@ class Music(commands.Cog):
         """Clears the play queue without leaving the channel."""
         state = self.get_state(ctx.guild)
         state.playlist = []
+        await ctx.send("Queue Cleared... How could you do this in good conscience, what did the queue ever do to you huh?")
 
     @commands.command(aliases=["jq"])
     @commands.guild_only()
@@ -239,8 +249,9 @@ class Music(commands.Cog):
         if 1 <= song <= len(state.playlist) and 1 <= new_index:
             song = state.playlist.pop(song - 1)  # take song at index...
             state.playlist.insert(new_index - 1, song)  # and insert it.
+            queue = state.playlist
 
-            await ctx.send(self._queue_text(state.playlist))
+            await ctx.send(embed = _queue_text_(state, queue))
         else:
             raise commands.CommandError("You must use a valid index.")
 
@@ -253,25 +264,7 @@ class Music(commands.Cog):
             index = state.playlist.pop(index-1)
             queue = state.playlist
             
-            fullLength = 0
-            for i in range(len(queue)):
-                fullLength += queue[i-1].get_duration()
-
-            embed = discord.Embed(title = "Music Queue", description = f'**Playing:** {state.now_playing.title}\n**Queue Length:** {timeFormat(fullLength)}')
-            songList = []
-            songList += [f'{i+1}. **{song.title}**' for (i,song) in enumerate(queue)]
-            songList = "\n".join(songList)
-            embed.add_field(name = "Songs", value=songList)
-            durationList=[]
-            durationList += [f'{timeFormat(song.duration)}' for song in queue]
-            durationList = "\n".join(durationList)
-            embed.add_field(name = "Duration", value=durationList)
-            requesterList=[]
-            requesterList += [f'{song.requested_by.name}' for song in queue]
-            requesterList = "\n".join(requesterList)
-            embed.add_field(name = "Requester", value=requesterList)
-            
-            await ctx.send(embed=embed)
+            await ctx.send(embed=_queue_text_(state, queue))
         else:
             raise commands.CommandError("Out of range dumbass.")
 
