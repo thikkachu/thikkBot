@@ -9,7 +9,7 @@ from . import config
 
 cfg = config.load_config()
 
-bot = commands.Bot(command_prefix=cfg["prefix"])
+bot = commands.Bot(command_prefix=cfg["prefix"], case_insensitive=True)
 bot.remove_command('help')
 
 #---------------------------HELP-CMD----------------------------#
