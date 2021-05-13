@@ -155,6 +155,17 @@ class Music(commands.Cog):
                 next_song = state.playlist.pop(0)
                 self._play_song(client, state, next_song, msg)
                 asyncio.run_coroutine_threadsafe(msg.send(f"**Now playing** {next_song.title}", embed=next_song.get_embed()) ,self.bot.loop)
+            # else:
+            #     for _ in range(10):
+            #         if len(state.playlist) > 0:
+            #             break
+            #         asyncio.run_coroutine_threadsafe(asyncio.sleep(1), self.bot.loop)
+            #     if len(state.playlist) > 0:
+            #         next_song = state.playlist.pop(0)
+            #         self._play_song(client, state, next_song, msg)
+            #         asyncio.run_coroutine_threadsafe(msg.send(f"**Now playing** {next_song.title}", embed=next_song.get_embed()) ,self.bot.loop)
+            #         return
+            #     asyncio.run_coroutine_threadsafe(client.disconnect(), self.bot.loop)
 
 
 
@@ -246,7 +257,7 @@ class Music(commands.Cog):
             for i in range(len(queue)):
                 fullLength += queue[i-1].get_duration()
 
-            embed = discord.Embed(title = "Music Queue", description = f'**Playing:** {state.now_playing.title}\t|\t**Queue Length:** {timeFormat(fullLength)}')
+            embed = discord.Embed(title = "Music Queue", description = f'**Playing:** {state.now_playing.title}\n**Queue Length:** {timeFormat(fullLength)}')
             songList = []
             songList += [f'{i+1}. **{song.title}**' for (i,song) in enumerate(queue)]
             songList = "\n".join(songList)
@@ -274,16 +285,29 @@ class Music(commands.Cog):
         state = self.get_state(ctx.guild)  # get the guild's state
 
         if client and client.channel:
-            try:
-                video = Video(url, ctx.author)
-            except youtube_dl.DownloadError as e:
-                logging.warn(f"Error downloading video: {e}")
-                await ctx.send(
-                    "There was an error downloading your video, sorry.")
-                return
-            state.playlist.append(video)
-            message = await ctx.send(
-                "Added to queue.", embed=video.get_embed())
+            if client.is_playing():
+                try:
+                    video = Video(url, ctx.author)
+                except youtube_dl.DownloadError as e:
+                    logging.warn(f"Error downloading video: {e}")
+                    await ctx.send(
+                        "There was an error downloading your video, sorry.")
+                    return
+                state.playlist.append(video)
+                message = await ctx.send(
+                    "Added to queue.", embed=video.get_embed())
+            else:
+                channel = ctx.author.voice.channel
+                client = ctx.guild.voice_client
+                try:
+                    video = Video(url, ctx.author)
+                except youtube_dl.DownloadError as e:
+                    await ctx.send(
+                        "There was an error downloading your video, sorry.")
+                    return
+                self._play_song(client, state, video, msg)
+                message = await ctx.send("**Now playing:**", embed=video.get_embed())
+                logging.info(f"Now playing '{video.title}'")
         else:
             if ctx.author.voice is not None and ctx.author.voice.channel is not None:
                 channel = ctx.author.voice.channel
@@ -300,14 +324,6 @@ class Music(commands.Cog):
             else:
                 raise commands.CommandError(
                     "You're not in a vc dumbass")
-
-    @tasks.loop(seconds=180)
-    async def voice_check(self, ctx):
-        client = ctx.guild.voice_client
-        if client.is_playing():
-            return
-        elif not client.is_playing():
-            await client.disconnect()
 
 
 
