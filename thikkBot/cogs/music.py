@@ -21,6 +21,14 @@ def timeFormat(seconds):
             duration = duration[1:]
         return duration
 
+def timeLeft(state, client):
+    duration = state.now_playing.get_duration()
+    endTime = startTime + duration
+    currentTime = time.time()
+    if client.is_paused():
+        return f'{timeFormat(pauseTime-startTime)} / {timeFormat(duration)}'
+    else:
+        return f'{timeFormat(currentTime-startTime)} / {timeFormat(duration)}'
 def titleLengthCheck(str):
     if len(str) >= 37:
         return(f'{str[0:36]}...')
@@ -109,12 +117,6 @@ class Music(commands.Cog):
         else:
             raise commands.CommandError("Not in a channel smallcock.")
 
-    @commands.command()
-    @commands.guild_only()
-    async def test(self, ctx):
-        state = self.get_state(ctx.guild)
-        await ctx.send(timeFormat(state.now_playing.get_duration()))
-
     @commands.command(aliases=["resume"])
     @commands.guild_only()
     @commands.check(audio_playing)
@@ -124,13 +126,17 @@ class Music(commands.Cog):
         self._pause_audio(client, ctx)
 
     def _pause_audio(self, client, ctx):
+        global pauseTime
         if client.is_paused():
             client.resume()
             asyncio.run_coroutine_threadsafe(ctx.send(f"Track **Resumed**"), self.bot.loop )
+            startTime = time.time()
             
         else:
             client.pause()
             asyncio.run_coroutine_threadsafe(ctx.send(f"Track **Paused**"),self.bot.loop)
+            pauseTime=time.time()
+            
     
     @commands.command(aliases=["vol", "v"])
     @commands.guild_only()
@@ -169,11 +175,12 @@ class Music(commands.Cog):
         "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
         }
         state.now_playing = song
+        global loop
+        global startTime
         source = discord.PCMVolumeTransformer(
             discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options), volume=state.volume)
 
         def after_playing(err):
-            global loop
             if loop == True:
                 self._play_song(client, state, song, msg)
             elif len(state.playlist) > 0:
@@ -192,9 +199,8 @@ class Music(commands.Cog):
             #         return
             #     asyncio.run_coroutine_threadsafe(client.disconnect(), self.bot.loop)
 
-
-
         client.play(source, after=after_playing)
+        startTime = time.time()
     @commands.command()
     @commands.guild_only()
     @commands.check(audio_playing)
@@ -213,10 +219,13 @@ class Music(commands.Cog):
     async def nowplaying(self, ctx):
         """Displays information about the current song."""
         state = self.get_state(ctx.guild)
+        client = ctx.guild.voice_client
+        embed = state.now_playing.get_embed()
+        embed.add_field(name = "⠀", value=f'⧖ {timeLeft(state, client)}')
         if ctx.guild.voice_client.is_paused():
-            message = await ctx.send("**Currently Paused:**", embed=state.now_playing.get_embed())
+            message = await ctx.send("**Currently Paused:**", embed=embed)
         else:
-            message = await ctx.send("**Now Playing:**", embed=state.now_playing.get_embed())
+            message = await ctx.send("**Now Playing:**", embed=embed)
 
     @commands.command(aliases=["q", "playlist"])
     @commands.guild_only()
@@ -240,7 +249,7 @@ class Music(commands.Cog):
         state.playlist = []
         await ctx.send("Queue Cleared... How could you do this in good conscience, what did the queue ever do to you huh?")
 
-    @commands.command(aliases=["jq"])
+    @commands.command(aliases=["jq"] )
     @commands.guild_only()
     @commands.check(audio_playing)
     async def jumpqueue(self, ctx, song: int, new_index: int):
@@ -272,11 +281,9 @@ class Music(commands.Cog):
     @commands.guild_only()
     async def play(self, ctx, *, url):
         """Plays audio hosted at <url> (or performs a search for <url> and plays the first result)."""
-
         client = ctx.guild.voice_client
         msg = ctx
         state = self.get_state(ctx.guild)  # get the guild's state
-
         if client and client.channel:
             if client.is_playing():
                 try:
@@ -287,8 +294,7 @@ class Music(commands.Cog):
                         "There was an error downloading your video, sorry.")
                     return
                 state.playlist.append(video)
-                message = await ctx.send(
-                    "Added to queue.", embed=video.get_embed())
+                message = await ctx.send("Added to queue.", embed=video.get_embed())
             else:
                 channel = ctx.author.voice.channel
                 client = ctx.guild.voice_client
@@ -301,6 +307,7 @@ class Music(commands.Cog):
                 self._play_song(client, state, video, msg)
                 message = await ctx.send("**Now playing:**", embed=video.get_embed())
                 logging.info(f"Now playing '{video.title}'")
+                
         else:
             if ctx.author.voice is not None and ctx.author.voice.channel is not None:
                 channel = ctx.author.voice.channel
@@ -314,11 +321,17 @@ class Music(commands.Cog):
                 self._play_song(client, state, video, msg)
                 message = await ctx.send("**Now playing:**", embed=video.get_embed())
                 logging.info(f"Now playing '{video.title}'")
+                
             else:
                 raise commands.CommandError(
                     "You're not in a vc dumbass")
 
-
+    @commands.command()
+    @commands.guild_only()
+    async def test(self, ctx):
+        state = self.get_state(ctx.guild)
+        client = ctx.guild.voice_client
+        await ctx.send(f'{timeFormat()} / {timeFormat(state.now_playing.get_duration())}')
 
 class GuildState:
     """Helper class managing per-guild state."""
