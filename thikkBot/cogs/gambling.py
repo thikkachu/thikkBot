@@ -3,6 +3,7 @@
 import discord
 from discord.ext import commands
 import random
+import math
 coinflip = ["`heads.` Now give some.", "`*tails`... furry lookin ass.*","`head`ededededededs", "Miles Tails Prower (`tails`).", "ooga booga, monkey want `head`.", "tailgating your mom's dump truck (`tails`)."]
 #-------------------------INITIALIZES COG ENV-----------------------------#
 
@@ -43,7 +44,12 @@ class Gambling(commands.Cog):
                 await ctx.send("I don't know how you did it, but you fucked up cause I can't process this shit.")
                 return
             sides = int(die.replace('d',''))
-            await ctx.send(f"**{senderSpliced}** rolled `['{str(random.randint(1, sides))}']`")
+            exceedinglyRareThreshold = int(sides*10*math.log(sides))
+            exceedinglyRare = random.randint(1,exceedinglyRareThreshold)
+            if exceedinglyRare == 1:
+                await ctx.send(f"**{senderSpliced}** rolled `['{sides + 1}']`... What the fuck <:whoah:824444197372166144>?? `(1/{str(exceedinglyRareThreshold)} chance)`")
+            else:
+                await ctx.send(f"**{senderSpliced}** rolled `['{str(random.randint(1, sides))}']`")
 
         else:
             times, sides = die.split('d')
@@ -56,7 +62,13 @@ class Gambling(commands.Cog):
             if int(times) > 1:
                 await ctx.send(f'**{senderSpliced}** rolled **`{rolls}`**.\t Sum: **`[{sum}]`**')
             elif int(times) == 1:
-                await ctx.send(f'**{senderSpliced}** rolled **`{rolls}`**')
+                sides = int(sides)
+                exceedinglyRareThreshold = int(sides*10*math.log(sides))
+                exceedinglyRare = random.randint(1,exceedinglyRareThreshold)
+                if exceedinglyRare == 1:
+                    await ctx.send(f"**{senderSpliced}** rolled `['{str(sides + 1)}']`... What the fuck <:whoah:824444197372166144>?? `(1/{str(exceedinglyRareThreshold)} chance)`")
+                else:
+                    await ctx.send(f'**{senderSpliced}** rolled **`{rolls}`**')
             else:
                 await ctx.send('you did it wrong stupid')
 
