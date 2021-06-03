@@ -8,7 +8,6 @@ YTDL_OPTS = {
     "extract_flat": "in_playlist"
 }
 
-
 class Video:
     """Class containing information about a particular video."""
 

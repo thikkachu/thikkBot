@@ -1,6 +1,7 @@
 "token"="" # the bot's token
 "prefix"="t^" # prefix used to denote commands
-
+"spotifyClientId"=""
+"spotifyClientSecret"=""
 [music]
 # Options for the music commands
 "max_volume"=250 # Max audio volume. Set to -1 for unlimited.

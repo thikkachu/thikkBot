@@ -1,5 +1,6 @@
 import discord
 import logging
+import tekore
 import sys
 from discord.enums import _is_descriptor
 import toml
@@ -145,6 +146,12 @@ async def tip(ctx):
     await ctx.send(embed=embed)
 
 #---------------------------HELP-CMD----------------------------#
+spotifyClientId = cfg["spotifyClientId"]
+spotifyClientSecret = cfg["spotifyClientSecret"]
+
+spotifyAppToken = tekore.request_client_token(spotifyClientId, spotifyClientSecret)
+bot.spotify = tekore.Spotify(spotifyAppToken, asynchronous=True)
+
 
 @bot.event 
 async def on_ready():

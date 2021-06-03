@@ -1,5 +1,5 @@
 import enum
-from discord.ext import commands, tasks
+from discord.ext import commands
 import discord
 import asyncio
 import youtube_dl
@@ -7,7 +7,22 @@ import logging
 import time
 from urllib import request
 from ..video import Video
+import tekore
 
+
+async def spotify(self, ctx, args):
+    if args.__contains__('/track'):
+        id = tekore.from_url(args) 
+        track = await self.bot.spotify.track(id[1])
+        title = track.name
+        artist = track.artists[0].name
+        return f'{title} {artist}'
+
+
+    elif args.__contains__('/playlist'):
+        await ctx.send("Playlists aren't supported yet. fuck off im a slow worker")
+    else:
+        await ctx.send ("Could not parse Spotify link :D")
 
 def timeFormat(seconds):
     if seconds >= 3600:
@@ -129,7 +144,7 @@ class Music(commands.Cog):
         global pauseTime
         if client.is_paused():
             client.resume()
-            asyncio.run_coroutine_threadsafe(ctx.send(f"Track **Resumed**"), self.bot.loop )
+            asyncio.run_coroutine_threadsafe(ctx.send(f"Track **Resumed**"), self.bot.loop)
             startTime = time.time()
             
         else:
@@ -169,6 +184,10 @@ class Music(commands.Cog):
         client = ctx.guild.voice_client
         client.stop()
 
+    def spotify(self, client, state, song, msg):
+        state.now_playing = song
+        global loop
+    
     def _play_song(self, client, state, song, msg):
         ffmpeg_options = {
         'options': '-vn',
@@ -285,7 +304,10 @@ class Music(commands.Cog):
         msg = ctx
         state = self.get_state(ctx.guild)  # get the guild's state
         if client and client.channel:
+            
             if client.is_playing():
+                if url.__contains__("open.spotify.com"):
+                    url = await spotify(self, ctx, url)
                 try:
                     video = Video(url, ctx.author)
                 except youtube_dl.DownloadError as e:
@@ -296,6 +318,8 @@ class Music(commands.Cog):
                 state.playlist.append(video)
                 message = await ctx.send("Added to queue.", embed=video.get_embed())
             else:
+                if url.__contains__("open.spotify.com"):
+                    url = await spotify(self, ctx, url)
                 channel = ctx.author.voice.channel
                 client = ctx.guild.voice_client
                 try:
@@ -311,6 +335,8 @@ class Music(commands.Cog):
         else:
             if ctx.author.voice is not None and ctx.author.voice.channel is not None:
                 channel = ctx.author.voice.channel
+                if url.__contains__("open.spotify.com"):
+                    url = await spotify(self, ctx, url)
                 try:
                     video = Video(url, ctx.author)
                 except youtube_dl.DownloadError as e:
@@ -323,8 +349,7 @@ class Music(commands.Cog):
                 logging.info(f"Now playing '{video.title}'")
                 
             else:
-                raise commands.CommandError(
-                    "You're not in a vc dumbass")
+                raise commands.CommandError("You're not in a vc dumbass")
 
     @commands.command()
     @commands.guild_only()
