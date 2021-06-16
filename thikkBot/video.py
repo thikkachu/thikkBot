@@ -23,6 +23,7 @@ class Video:
             self.thumbnail = video[
                 "thumbnail"] if "thumbnail" in video else None
             self.requested_by = requested_by
+            self.duration = video['duration']
 
     def _get_info(self, video_url):
         with ytdl.YoutubeDL(YTDL_OPTS) as ydl:
@@ -45,3 +46,6 @@ class Video:
         if self.thumbnail:
             embed.set_thumbnail(url=self.thumbnail)
         return embed
+
+    def get_duration(self):
+        return self.duration
