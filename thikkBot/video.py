@@ -30,8 +30,9 @@ class Video:
             info = ydl.extract_info(video_url, download=False)
             video = None
             if "_type" in info and info["_type"] == "playlist":
-                return self._get_info(
-                    info["entries"][0]["url"])  # get info for first video
+                for i in range(len(info["entries"])):
+                    return self._get_info(
+                        info["entries"][i]["url"])  # get info for first video
             else:
                 video = info
             return video

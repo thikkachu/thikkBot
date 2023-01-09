@@ -1,6 +1,7 @@
 import discord
 import logging
 import tekore
+import asyncio
 import sys
 from discord.enums import _is_descriptor
 import toml
@@ -9,8 +10,9 @@ from .cogs import math,music, error, meta, tips, fun, gambling, serverManagement
 from . import config
 
 cfg = config.load_config()
+intents = discord.Intents.all()
 
-bot = commands.Bot(command_prefix=cfg["prefix"], case_insensitive=True)
+bot = commands.Bot(command_prefix=cfg["prefix"], case_insensitive=True, intents=intents)
 bot.remove_command('help')
 
 #---------------------------HELP-CMD----------------------------#
@@ -161,16 +163,17 @@ async def on_ready():
 COGS = [music.Music, error.CommandErrorHandler, meta.Meta, tips.Tips, gambling.Gambling, fun.fun, serverManagement.serverManagement, math.math]
 
 
-def add_cogs(bot):
+async def add_cogs(bot):
     for cog in COGS:
-        bot.add_cog(cog(bot, cfg))  # Initialize the cog and add it to the bot
+        await bot.add_cog(cog(bot, cfg))  # Initialize the cog and add it to the bot
 
 
 def run():
-    add_cogs(bot)
+    asyncio.run(add_cogs(bot))
     if cfg["token"] == "":
         raise ValueError(
             "No token has been provided. Please ensure that config.toml contains the bot token."
         )
         sys.exit(1)
     bot.run(cfg["token"])
+
