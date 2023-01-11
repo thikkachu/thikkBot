@@ -8,9 +8,11 @@ autopep8 = "*"
 
 [packages]
 toml = "*"
-youtube-dl = "*"
 "discord.py" = "*"
 pynacl = "*"
+tekore = "*"
+discord = {extras = ["voice"], version = "*"}
+youtube-dl = "*"
 
 [requires]
 python_version = "3.8"

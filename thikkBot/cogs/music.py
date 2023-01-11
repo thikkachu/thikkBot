@@ -7,7 +7,9 @@ import logging
 import time
 from urllib import request
 from ..video import Video
+from ..deezer import Deezerfy
 import tekore
+import os
 
 
 async def spotify(self, ctx, args):
@@ -118,7 +120,6 @@ class Music(commands.Cog):
         else:
             self.states[guild.id] = GuildState()
             return self.states[guild.id]
-
     @commands.command(aliases=["stop"])
     @commands.guild_only()
     async def leave(self, ctx):
@@ -198,25 +199,46 @@ class Music(commands.Cog):
         global startTime
         source = discord.PCMVolumeTransformer(
             discord.FFmpegPCMAudio(song.stream_url, **ffmpeg_options), volume=state.volume)
-
         def after_playing(err):
             if loop == True:
                 self._play_song(client, state, song, msg)
             elif len(state.playlist) > 0:
                 next_song = state.playlist.pop(0)
-                self._play_song(client, state, next_song, msg)
-                asyncio.run_coroutine_threadsafe(msg.send(f"**Now playing** {next_song.title}", embed=next_song.get_embed()) ,self.bot.loop)
-            # else:
-            #     for _ in range(10):
-            #         if len(state.playlist) > 0:
-            #             break
-            #         asyncio.run_coroutine_threadsafe(asyncio.sleep(1), self.bot.loop)
-            #     if len(state.playlist) > 0:
-            #         next_song = state.playlist.pop(0)
-            #         self._play_song(client, state, next_song, msg)
-            #         asyncio.run_coroutine_threadsafe(msg.send(f"**Now playing** {next_song.title}", embed=next_song.get_embed()) ,self.bot.loop)
-            #         return
-            #     asyncio.run_coroutine_threadsafe(client.disconnect(), self.bot.loop)
+                if next_song.artist:
+                    self._play_song_deez(client, state, next_song, msg)
+                    asyncio.run_coroutine_threadsafe(msg.send(f"**Now playing** {next_song.title}", embed=next_song.get_embed()) ,self.bot.loop)
+                else:
+                    self._play_song(client, state, next_song, msg)
+                    asyncio.run_coroutine_threadsafe(msg.send(f"**Now playing** {next_song.title}", embed=next_song.get_embed()) ,self.bot.loop)
+            else: 
+                client.disconnect()
+
+        
+        client.play(source, after=after_playing)
+        startTime = time.time()
+    def _play_song_deez(self, client, state, song, msg):
+        state.now_playing = song
+        global loop
+        global startTime
+        source = discord.PCMVolumeTransformer(
+            discord.FFmpegPCMAudio(source='/Users/fermioni/Code/Thikkbot/thikkBot/cogs/tempMusic/'+ song.title + '.mp3'), volume=state.volume)
+        
+
+        def after_playing(err):
+            os.remove('/Users/fermioni/Code/Thikkbot/thikkBot/cogs/tempMusic/'+ song.title + '.mp3')
+            os.remove('/Users/fermioni/Code/Thikkbot/thikkBot/cogs/tempMusic/'+ song.title + '.lrc')
+            if loop == True:
+                self._play_song(client, state, song, msg)
+            elif len(state.playlist) > 0:
+                next_song = state.playlist.pop(0)
+                if hasattr(next_song, 'artist'):
+                    self._play_song_deez(client, state, next_song, msg)
+                    asyncio.run_coroutine_threadsafe(msg.send(f"**Now playing** {next_song.title}", embed=next_song.get_embed()) ,self.bot.loop)
+                else:
+                    self._play_song(client, state, next_song, msg)
+                    asyncio.run_coroutine_threadsafe(msg.send(f"**Now playing** {next_song.title}", embed=next_song.get_embed()) ,self.bot.loop)
+            else: 
+                client.disconnect()
 
         client.play(source, after=after_playing)
         startTime = time.time()
@@ -296,6 +318,22 @@ class Music(commands.Cog):
         else:
             raise commands.CommandError("Out of range dumbass.")
 
+    @commands.command(aliases=['dl'], brief="Downloads a song off deezer.")
+    @commands.guild_only()
+    async def download(self, ctx, *, url):
+        try:
+            song = Deezerfy(url, ctx.author)
+        except:
+            await ctx.send("Error with CDN")
+            return
+        await ctx.send(embed=song.get_embed())
+        await ctx.send(embed=song.embed128())
+        await ctx.send(embed=song.embed256())
+        await ctx.send(embed=song.embed320())
+        await ctx.send(embed=song.embedflac())
+        os.remove('/Users/fermioni/Code/Thikkbot/thikkBot/cogs/tempMusic/'+ song.title + '.mp3')
+        os.remove('/Users/fermioni/Code/Thikkbot/thikkBot/cogs/tempMusic/'+ song.title + '.lrc')
+
     @commands.command(brief="Plays audio from <url>.", aliases = ['p', 'pl', 'pla'])
     @commands.guild_only()
     async def play(self, ctx, *, url):
@@ -304,49 +342,92 @@ class Music(commands.Cog):
         msg = ctx
         state = self.get_state(ctx.guild)  # get the guild's state
         if client and client.channel:
-            
-            if client.is_playing():
-                if url.__contains__("open.spotify.com"):
-                    url = await spotify(self, ctx, url)
-                try:
-                    video = Video(url, ctx.author)
-                except youtube_dl.DownloadError as e:
-                    logging.warn(f"Error downloading video: {e}")
-                    await ctx.send(
-                        "There was an error downloading your video, sorry.")
-                    return
-                state.playlist.append(video)
-                message = await ctx.send("Added to queue.", embed=video.get_embed())
+            if url.endswith("on deezer") or url.__contains__("https://www.deezer.com/en/track/"):
+                if url.endswith("on deezer"):
+                    url = url[:-9] #splices off "on deezer"
+                if url.__contains__("https://www.deezer.com/en/track/"):
+                    url = url[32:]
+                    url = url.split("?", 1)[0]
+                if client.is_playing():
+                    try:
+                        video = Deezerfy(url, ctx.author)
+                    except youtube_dl.DownloadError as e:
+                        logging.warn(f"Error downloading video: {e}")
+                        await ctx.send(
+                            "There was an error downloading your video, sorry.")
+                        return
+                    state.playlist.append(video)
+                    message = await ctx.send("Added to queue.", embed=video.get_embed())
+                else:
+                    channel = ctx.author.voice.channel
+                    client = ctx.guild.voice_client
+                    try:
+                        video = Deezerfy(url, ctx.author)
+                    except youtube_dl.DownloadError as e:
+                        await ctx.send(
+                            "There was an error downloading your song, sorry.")
+                        return
+                    self._play_song_deez(client, state, video, msg)
+                    message = await ctx.send("**Now playing:**", embed=video.get_embed())
+                    logging.info(f"Now playing '{video.title}'")
             else:
-                if url.__contains__("open.spotify.com"):
-                    url = await spotify(self, ctx, url)
-                channel = ctx.author.voice.channel
-                client = ctx.guild.voice_client
-                try:
-                    video = Video(url, ctx.author)
-                except youtube_dl.DownloadError as e:
-                    await ctx.send(
-                        "There was an error downloading your video, sorry.")
-                    return
-                self._play_song(client, state, video, msg)
-                message = await ctx.send("**Now playing:**", embed=video.get_embed())
-                logging.info(f"Now playing '{video.title}'")
+                if client.is_playing():
+                    if url.__contains__("open.spotify.com"):
+                        url = await spotify(self, ctx, url)
+                    try:
+                        video = Video(url, ctx.author)
+                    except youtube_dl.DownloadError as e:
+                        logging.warn(f"Error downloading video: {e}")
+                        await ctx.send(
+                            "There was an error downloading your video, sorry.")
+                        return
+                    state.playlist.append(video)
+                    message = await ctx.send("Added to queue.", embed=video.get_embed())
+                else:
+                    if url.__contains__("open.spotify.com"):
+                        url = await spotify(self, ctx, url)
+                    channel = ctx.author.voice.channel
+                    client = ctx.guild.voice_client
+                    try:
+                        video = Video(url, ctx.author)
+                    except youtube_dl.DownloadError as e:
+                        await ctx.send(
+                            "There was an error downloading your video, sorry.")
+                        return
+                    self._play_song(client, state, video, msg)
+                    message = await ctx.send("**Now playing:**", embed=video.get_embed())
+                    logging.info(f"Now playing '{video.title}'")
                 
         else:
             if ctx.author.voice is not None and ctx.author.voice.channel is not None:
                 channel = ctx.author.voice.channel
-                if url.__contains__("open.spotify.com"):
-                    url = await spotify(self, ctx, url)
-                try:
-                    video = Video(url, ctx.author)
-                except youtube_dl.DownloadError as e:
-                    await ctx.send(
-                        "There was an error downloading your video, sorry.")
-                    return
-                client = await channel.connect()
-                self._play_song(client, state, video, msg)
-                message = await ctx.send("**Now playing:**", embed=video.get_embed())
-                logging.info(f"Now playing '{video.title}'")
+                if url.endswith("on deezer") or url.__contains__("https://www.deezer.com/en/track/"):
+                    if url.endswith("on deezer"):
+                        url = url[:-9] #splices off "on deezer"
+                    if url.__contains__("https://www.deezer.com/en/track/"):
+                        url = url[32:]
+                        url = url.split("?", 1)[0]
+                    try:
+                        video=Deezerfy(url, ctx.author)
+                    except youtube_dl.DownloadError as e: 
+                        await ctx.send("Deezer Error, RIP")
+                        return
+                    client = await channel.connect()
+                    self._play_song_deez(client, state, video, msg)
+                    message = await ctx.send("**Now playing:**", embed=video.get_embed())
+                else:
+                    if url.__contains__("open.spotify.com"):
+                        url = await spotify(self, ctx, url)
+                    try:
+                        video = Video(url, ctx.author)
+                    except youtube_dl.DownloadError as e:
+                        await ctx.send(
+                            "There was an error downloading your video, sorry.")
+                        return
+                    client = await channel.connect()
+                    self._play_song(client, state, video, msg)
+                    message = await ctx.send("**Now playing:**", embed=video.get_embed())
+                    logging.info(f"Now playing '{video.title}'")
                 
             else:
                 raise commands.CommandError("You're not in a vc dumbass")
