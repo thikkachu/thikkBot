@@ -35,42 +35,69 @@ class Gambling(commands.Cog):
     
     
     @commands.command(aliases = ['droll'], brief='same as ^roll but in dnd syntax. ^rolld <times>d<sides>') #returns dice roll(s). takes input in dnd syntax.
-    async def rolld(self, ctx, die = "d6", *, misc = ""):
+    async def rolld(self, ctx,*, die = "d6"):
         sender = str(ctx.author)
         senderSpliced = sender[:-5]
         die = die.lower()
-        if die.startswith('d'):
-            if isinstance(int(die.replace('d','')), commands.BadArgument):
-                await ctx.send("I don't know how you did it, but you fucked up cause I can't process this shit.")
-                return
-            sides = int(die.replace('d',''))
-            exceedinglyRareThreshold = int(sides*10*math.log(sides))
-            exceedinglyRare = random.randint(1,exceedinglyRareThreshold)
-            if exceedinglyRare == 1:
-                await ctx.send(f"**{senderSpliced}** rolled `['{sides + 1}']`... What the fuck <:whoah:824444197372166144>?? `(1/{str(exceedinglyRareThreshold)} chance)`")
-            else:
-                await ctx.send(f"**{senderSpliced}** rolled `['{str(random.randint(1, sides))}']`")
-
-        else:
-            times, sides = die.split('d')
+        if die.__contains__("+"):
+            
+            die = die.split("+")
             rolls = []
-            for i in range(int(times)):
-                rolls.append(str(random.randint(1, int(sides))))
             sum = 0
-            for i in range(len(rolls)):
-                sum = sum + int(rolls[i])
-            if int(times) > 1:
-                await ctx.send(f'**{senderSpliced}** rolled **`{rolls}`**.\t Sum: **`[{sum}]`**')
-            elif int(times) == 1:
-                sides = int(sides)
+            for roll in die:
+                if roll.startswith("d"):
+                    sides = int(roll.replace('d',''))
+                    rolls.append("d"+str(sides) + ": " +str(random.randint(1, int(sides))))
+                    sum = sum + random.randint(1, sides)
+
+                elif "d" in roll:
+                    roll = roll.strip()
+                    times, sides = roll.split('d')
+                    currentroll = str(random.randint(1, int(sides)))
+                    for i in range(int(times)):
+                        rolls.append("d"+str(sides) + ": " + str(currentroll))
+                    for i in range(len(rolls)):
+                        sum = sum + int(currentroll)
+                    
+                else:
+                    roll = int(roll)
+                    sum = sum + roll
+            await ctx.send(f'**{senderSpliced}** rolled **`{rolls}`**.\t Sum: **`[{sum}]`**')
+            
+                
+        else:
+            if die.startswith('d'):
+                if isinstance(int(die.replace('d','')), commands.BadArgument):
+                    await ctx.send("I don't know how you did it, but you fucked up cause I can't process this shit.")
+                    return
+                sides = int(die.replace('d',''))
                 exceedinglyRareThreshold = int(sides*10*math.log(sides))
                 exceedinglyRare = random.randint(1,exceedinglyRareThreshold)
                 if exceedinglyRare == 1:
-                    await ctx.send(f"**{senderSpliced}** rolled `['{str(sides + 1)}']`... What the fuck <:whoah:824444197372166144>?? `(1/{str(exceedinglyRareThreshold)} chance)`")
+                    await ctx.send(f"**{senderSpliced}** rolled `['{sides + 1}']`... What the fuck <:whoah:824444197372166144>?? `(1/{str(exceedinglyRareThreshold)} chance)`")
                 else:
-                    await ctx.send(f'**{senderSpliced}** rolled **`{rolls}`**')
+                    await ctx.send(f"**{senderSpliced}** rolled `['{str(random.randint(1, sides))}']`")
+
             else:
-                await ctx.send('you did it wrong stupid')
+                times, sides = die.split('d')
+                rolls = []
+                for i in range(int(times)):
+                    rolls.append(str(random.randint(1, int(sides))))
+                sum = 0
+                for i in range(len(rolls)):
+                    sum = sum + int(rolls[i])
+                if int(times) > 1:
+                    await ctx.send(f'**{senderSpliced}** rolled **`{rolls}`**.\t Sum: **`[{sum}]`**')
+                elif int(times) == 1:
+                    sides = int(sides)
+                    exceedinglyRareThreshold = int(sides*10*math.log(sides))
+                    exceedinglyRare = random.randint(1,exceedinglyRareThreshold)
+                    if exceedinglyRare == 1:
+                        await ctx.send(f"**{senderSpliced}** rolled `['{str(sides + 1)}']`... What the fuck <:whoah:824444197372166144>?? `(1/{str(exceedinglyRareThreshold)} chance)`")
+                    else:
+                        await ctx.send(f'**{senderSpliced}** rolled **`{rolls}`**')
+                else:
+                    await ctx.send('you did it wrong stupid')
 
 
     @commands.command(aliases = ['coinflip', 'flip'], brief = 'Flips a coin. ^flip <# of times> (flips once by default)') #returns a coinflip
