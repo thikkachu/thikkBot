@@ -59,6 +59,7 @@ class Gambling(commands.Cog):
                         sum = sum + int(currentroll)
                     
                 else:
+                    rolls.append("Bonus: " + roll)
                     roll = int(roll)
                     sum = sum + roll
             await ctx.send(f'**{senderSpliced}** rolled **`{rolls}`**.\t Sum: **`[{sum}]`**')
