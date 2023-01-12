@@ -39,11 +39,11 @@ class Gambling(commands.Cog):
         sender = str(ctx.author)
         senderSpliced = sender[:-5]
         die = die.lower()
+        sum = 0
         if die.__contains__("+"):
             
             die = die.split("+")
             rolls = []
-            sum = 0
             for roll in die:
                 if roll.startswith("d"):
                     sides = int(roll.replace('d',''))
@@ -53,10 +53,9 @@ class Gambling(commands.Cog):
                 elif "d" in roll:
                     roll = roll.strip()
                     times, sides = roll.split('d')
-                    currentroll = str(random.randint(1, int(sides)))
-                    for i in range(int(times)):
+                    for _ in range(int(times)):
+                        currentroll = str(random.randint(1, int(sides)))
                         rolls.append("d"+str(sides) + ": " + str(currentroll))
-                    for i in range(len(rolls)):
                         sum = sum + int(currentroll)
                     
                 else:
